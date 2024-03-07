@@ -1,7 +1,18 @@
 {
-    "timeout":{
-        "health_check": "5"
-    }
-    
+    "host":"",
 
+    "redis_host":"",
+
+    "algorithm": "",
+
+    "timeout":{
+        "healthCheck": "",
+
+        "datastorePersist" : ""
+    },
+
+    "loadRedisDump":"",
+    "redisDumpDirectory":"",
+    "redisDumpFile":"dump.rdb",
+    "initialServers":"[]"
 }
