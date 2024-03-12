@@ -1,6 +1,5 @@
 package redis
 
-//maybe implement redis as a struct
 
 import (
     "context"
@@ -28,7 +27,6 @@ func (s *Server) SetHost(host string){
 	s.Host = strings.Trim(host," ")
 
 }
-
 
 
 func (s *Server) GetHost() string{
@@ -68,16 +66,18 @@ type Redis struct {
 	client 	*redis.Client
 	Mu sync.RWMutex  //mutex for server list
 	Servers map[string] *Server
+	Get_Dump bool
 	
 }
 
 
-// dump_config=[dump_interval,dump_directory,dump_File]
-func (r *Redis) Connect(redis_host string, get_dump bool, dump_config ...string) bool{
-	redis_host=strings.Trim(redis_host," ")
+//configure redis to run with necessary dir to save and load dump
+func (r *Redis) Connect(redis_host string, get_dump bool, dump_interval string) bool{
+	redis_host = strings.Trim(redis_host," ")
+	r.Get_Dump = get_dump
 	r.Servers = make(map[string]*Server)
 	r.client = redis.NewClient(&redis.Options{
-        Addr:     redis_host, // Redis server address
+        Addr:     redis_host, 		// Redis server address
         Password: "",               // No password
         DB:       0,                // Default DB
     })
@@ -87,35 +87,27 @@ func (r *Redis) Connect(redis_host string, get_dump bool, dump_config ...string)
 		fmt.Println(err)
         return false
     } else {
-
-		r.client.ConfigSet(r.Ctx, "save", dump_config[0]+" 1") // set snapshot interval and set to save after change
-
-		if get_dump  {					// configure redis to get the dump file
-		// Set the directory of the dump file
-		_, err := r.client.ConfigSet(r.Ctx, "dir", dump_config[1]).Result()
-		if err != nil {
-			fmt.Println("Error setting directory:", err)
-			return false
-		}
-
-		// Set the filename of the dump file
-		_, err = r.client.ConfigSet(r.Ctx, "dbfilename", dump_config[2]).Result()
-		if err != nil {
-			fmt.Println("Error setting dbfilename:", err)
-			return false
-		}
-	}
+		r.client.ConfigSet(r.Ctx, "save", dump_interval+" 1") // set snapshot interval and set to save after change
 		return true
 	}
 
 }
 
 func (r *Redis) InitServerList(init_servers *[]string) (*map[string]*Server){
-	load_status := r.SyncWithRedisSet()
-	if load_status && len(r.Servers) !=0{
+	if !r.Get_Dump {
+		_, err := r.client.Del(r.Ctx,"Servers").Result()
+		if err != nil {
+			fmt.Println("Error deleting set:", err)
+		}
+	} else {
+		load_status := r.SyncWithRedisSet()
+		if !load_status {
+			fmt.Println("Could not sync with redis")
+		}
 		return &r.Servers
 	}
-
+	
+	
 	for _, serv_ip := range (*init_servers){
 		server_instance := Server{}
 		server_instance.SetHost(serv_ip)
