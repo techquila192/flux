@@ -9,8 +9,8 @@ import (
 
 func Round_robin(servers *map[string]*redis.Server, servers_mu *sync.RWMutex, vis *map[string]bool, vis_mu *sync.Mutex) (*redis.Server) {
 	 servers_mu.RLock()
-	 defer servers_mu.RUnlock()
 	 vis_mu.Lock()
+	 defer servers_mu.RUnlock()
 	 defer vis_mu.Unlock()
 	 vis_map := *vis
 	 var available int = 0
