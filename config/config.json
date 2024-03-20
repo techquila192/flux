@@ -1,27 +1,24 @@
 {
-    "host":"localhost:5000",
+    "appHost":"localhost:5000",
 
-    "redis_host":"localhost:6379",
+    "redisHost":"localhost:6379",
 
     "algorithm": "round-robin",
 
     "timeout":{
-        "healthCheck": "60",
 
-        "datastorePersist" : "60",
+        "healthCheck": 60,
 
-        "serverResponse" : "1"
+        "serverResponse" : 1
     },
     
-    "serverRetries": "5",
+    "serverRetries": 5,
 
-    "loadRedisDump":"true",
+    "loadRedisDump": true,
 
-    "redisDumpDirectory":"/data/redis",
+    "healthCheckInterval": 10,
 
-    "redisDumpFile":"dump.rdb",
+    "redisDumpInterval": "60",
 
-    "redisDumpInterval":"60",
-
-    "initialServers":"[]"
+    "initialServers": ["example1.com", "example2.com"]
 }
