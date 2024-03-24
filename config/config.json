@@ -9,16 +9,16 @@
 
         "healthCheck": 60,
 
-        "serverResponse" : 1
+        "serverResponse" : 45
     },
     
     "serverRetries": 5,
 
-    "loadRedisDump": true,
+    "loadRedisDump": false,
 
-    "healthCheckInterval": 10,
+    "healthCheckInterval": 120,
 
     "redisDumpInterval": "60",
 
-    "initialServers": ["example1.com", "example2.com"]
+    "initialServers": ["localhost:8000", "localhost:8001", "localhost:8002"]
 }

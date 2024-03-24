@@ -1,13 +1,18 @@
 package main
 
-import "fmt"
-
 import (
-    "context"
+	"flux/utils"
+	"flux/load_balancer"
 )
 
 
 
 func main(){
-	fmt.Print("Hello, world!")
+
+	config := utils.ParseJSON()
+	loadbalancer.Initialize(config)
+	loadbalancer.Start()
+	
+	
+	
 }
