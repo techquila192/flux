@@ -22,11 +22,16 @@ var serviceClient http.Client
 
 
 func Start() {
-	//start health check 
+	//initial health check
+	utils.HealthCheck(redisInstance.GetServers(),&redisInstance.Mu,configData.Timeout.Health_check)
+	
 	ticker := time.NewTicker(time.Duration(configData.Health_check_interval) * time.Second)
+	//periodic health check 
 	go func(){
+		for {
 		<- ticker.C
 		utils.HealthCheck(redisInstance.GetServers(),&redisInstance.Mu,configData.Timeout.Health_check)
+		}
 	}()
 	
 	//server startup
@@ -48,7 +53,7 @@ func Initialize(config *utils.Config) {
 	redisInstance.InitServerList(&config.Initial_servers)
 
 	http.HandleFunc("/", balancer)	
-	http.HandleFunc("/add-server",addServer)
+	http.HandleFunc("/add-server", addServer)
 	http.HandleFunc("/remove-server", removeServer)
 	
 }
@@ -63,6 +68,14 @@ func balancer(res http.ResponseWriter, req *http.Request) {
 
 	for !sent	{
 		server := getServer()  
+		if req.URL.Scheme == ""{
+			req.URL.Scheme =  "http"
+		}
+		if server == nil{
+			panic(server)
+			//handle case that all servers are dead
+		}
+		
 		newRequest, err := http.NewRequest(req.Method, req.URL.Scheme + "://" + server.GetHost() + req.URL.Path, req.Body)
 		copyRequestHeaders(req,newRequest)
 		if err != nil {
@@ -76,22 +89,27 @@ func balancer(res http.ResponseWriter, req *http.Request) {
 		if err != nil {
 			//check for timeout then retry else look for new 
 			if os.IsTimeout(err){
+				fmt.Println(err)
 				for i:=1;i<=configData.Server_retries;i++{
 					server.IncrementConnections()
 					retryResponse, er := serviceClient.Do(newRequest)
 					server.DecrementConnections()
-					if er != nil{
+					if er == nil{
 						newResponse = retryResponse
 						sent = true
 						break
 					}
+					if i == configData.Server_retries{
+					server.SetAliveState(false)
+					}
 				}
 			} 
 		} else {
+			
 			sent = true
 		}
-	
 	}
+
 	copyResponse(newResponse, res)
 
 }
@@ -127,6 +145,7 @@ func addServer(res http.ResponseWriter, req *http.Request){
 	server := queryParams.Get("server")
 	code := queryParams.Get("code")
 	if code != os.Getenv("SECRET"){
+		res.WriteHeader(http.StatusUnauthorized)
 		return
 	}
 
@@ -140,6 +159,7 @@ func removeServer(res http.ResponseWriter, req *http.Request){
 	server := queryParams.Get("server")
 	code := queryParams.Get("code")
 	if code != os.Getenv("SECRET"){
+		res.WriteHeader(http.StatusUnauthorized)
 		return
 	}
 
