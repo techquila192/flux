@@ -39,6 +39,11 @@ func Start() {
 	
 }
 
+func Close(){
+	
+	redisInstance.GetClient().Close()
+}
+
 
 func Initialize(config *utils.Config) {
 	godotenv.Load()

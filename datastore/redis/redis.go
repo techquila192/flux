@@ -189,3 +189,8 @@ func (r *Redis) GetServers() (*map[string]*Server){
 	
 }
 
+func (r *Redis) GetClient() (*redis.Client){
+
+	return r.client
+}
+
