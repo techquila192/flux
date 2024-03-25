@@ -57,9 +57,7 @@ func (s *Server) DecrementConnections() {
 	s.ActiveConnections--
 }
 
-/*var	Servers map[*Server]bool 
-var mutex sync.Mutex  //mutex for concurrent writes to Servers
-var client 	*redis.Client //read only*/
+
 
 type Redis struct {
 	Ctx context.Context

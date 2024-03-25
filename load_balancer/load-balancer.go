@@ -77,7 +77,8 @@ func balancer(res http.ResponseWriter, req *http.Request) {
 			req.URL.Scheme =  "http"
 		}
 		if server == nil{
-			panic(server)
+			res.WriteHeader(http.StatusServiceUnavailable)
+			return
 			//handle case that all servers are dead
 		}
 		
