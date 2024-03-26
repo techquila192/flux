@@ -197,7 +197,6 @@ func getServer() *redis.Server{
 	if configData.Algorithm == "round-robin"{
 		return algorithm.Round_robin(redisInstance.GetServers(),&redisInstance.Mu,&visited,&visited_mu)
 	} else if configData.Algorithm == "least-connections"{
-		//fmt.Println("get serv")
 		return algorithm.Least_connections(&serverHeap)
 	}
 
