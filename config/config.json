@@ -3,7 +3,7 @@
 
     "redisHost":"localhost:6379",
 
-    "algorithm": "round-robin",
+    "algorithm": "least-connections",
 
     "timeout":{
 

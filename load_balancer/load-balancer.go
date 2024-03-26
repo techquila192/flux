@@ -6,6 +6,7 @@ import (
 	"flux/datastore/redis"
 	"net/http"
 	"github.com/joho/godotenv"
+	"container/heap"
 	"sync"
 	"time"
 	"fmt"
@@ -19,7 +20,7 @@ var redisInstance redis.Redis
 var visited map[string] bool
 var visited_mu sync.Mutex 
 var serviceClient http.Client
-
+var serverHeap algorithm.ServerHeap
 
 func Start() {
 	//initial health check
@@ -52,10 +53,24 @@ func Initialize(config *utils.Config) {
     }
 	configData = config
 	redisInstance = redis.Redis{}
-	visited_mu = sync.Mutex{}
-	visited = make(map[string]bool)
 	redisInstance.Connect(config.Redis_host,config.Load_redis_dump,config.Redis_dump_interval)
 	redisInstance.InitServerList(&config.Initial_servers)
+	
+	if config.Algorithm == "round-robin" {
+		visited_mu = sync.Mutex{}
+		visited = make(map[string]bool)
+	}
+	if config.Algorithm == "least-connections"{
+	serverHeap = algorithm.ServerHeap{
+		Scheme: config.Algorithm,
+		ServerMap: redisInstance.GetServers(),
+	}
+	servers := redisInstance.GetServers()
+	for host := range *servers {
+		
+		heap.Push(&serverHeap, host)
+	}
+	}
 
 	http.HandleFunc("/", balancer)	
 	http.HandleFunc("/add-server", addServer)
@@ -77,11 +92,12 @@ func balancer(res http.ResponseWriter, req *http.Request) {
 			req.URL.Scheme =  "http"
 		}
 		if server == nil{
+			fmt.Println("nil")
 			res.WriteHeader(http.StatusServiceUnavailable)
 			return
 			//handle case that all servers are dead
 		}
-		
+		//fmt.Println(server)
 		newRequest, err := http.NewRequest(req.Method, req.URL.Scheme + "://" + server.GetHost() + req.URL.Path, req.Body)
 		copyRequestHeaders(req,newRequest)
 		if err != nil {
@@ -154,9 +170,11 @@ func addServer(res http.ResponseWriter, req *http.Request){
 		res.WriteHeader(http.StatusUnauthorized)
 		return
 	}
-
+	_, present := (*redisInstance.GetServers())[server]
+	if !present {
+		heap.Push(&serverHeap, server)
+	}
 	redisInstance.AddMember(server)
-
 
 }
 
@@ -177,6 +195,9 @@ func getServer() *redis.Server{
 
 	if configData.Algorithm == "round-robin"{
 		return algorithm.Round_robin(redisInstance.GetServers(),&redisInstance.Mu,&visited,&visited_mu)
+	} else if configData.Algorithm == "least-connections"{
+		//fmt.Println("get serv")
+		return algorithm.Least_connections(&serverHeap)
 	}
 
 	return &redis.Server{}
