@@ -35,13 +35,14 @@ func Start() {
 		}
 	}()
 	
+	fmt.Println("Starting..")
 	//server startup
 	http.ListenAndServe(configData.App_host,nil)
 	
 }
 
 func Close(){
-	
+	fmt.Println("Closing..")
 	redisInstance.GetClient().Close()
 }
 

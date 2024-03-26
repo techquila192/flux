@@ -74,7 +74,7 @@ func ParseJSON() *Config{
 	Initial_servers: initial_servers,
 	}
 	
-	fmt.Println(configStruct)
+	fmt.Println("Config\n",configStruct)
 	return &configStruct
 
  
