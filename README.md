@@ -16,8 +16,22 @@ With 2 query parameters:
 
 ## Usage
 
-1. ### To run a docker image 
+1. ### To run a Docker image 
+* Clone the repository and navigate to root directory
+* Create a env file with SECRET as key. This will be used to verify requests for dynamic addition and removal of servers.
+* Configure the config file (**/config/config.json**) according to specifications.
+* Build the docker image  
+`docker build -t <image-name> .`
+* Run the image in a container
+
 2. ### To run the Go binary
+* Clone the repository and navigate to root directory
+* Ensure the Redis server is running (locally for minimal latency)
+* Create a env file with SECRET as key. This will be used to verify requests for dynamic addition and removal of servers.
+* Configure the config file (**/config/config.json**) according to specifications.
+* Run `go mod download` to download dependencies
+* Run `go run main.go` to start the application or alternatively, build the compiled binary and execute it.
+
 
 
 
