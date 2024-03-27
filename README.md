@@ -32,6 +32,12 @@ With 2 query parameters:
 * Run `go mod download` to download dependencies
 * Run `go run main.go` to start the application or alternatively, build the compiled binary and execute it.
 
+## Sample performance (using Locust)
+![Overview](images/stat1.png)
+
+![RPS](images/stat2.png)
+![RTT](images/stat3.png)
+![Users](images/stat4.png)
 
 
 
