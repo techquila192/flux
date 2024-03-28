@@ -33,6 +33,7 @@ With 2 query parameters:
 * Run `go run main.go` to start the application or alternatively, build the compiled binary and execute it.
 
 ## Sample performance (using Locust)
+The following test was performed with 5 test servers and least connections algorithm, with occassional random toggling of dead/alive states of some server/s.
 ![Overview](images/stat1.png)
 
 ![RPS](images/stat2.png)
