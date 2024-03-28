@@ -34,6 +34,7 @@ With 2 query parameters:
 
 ## Sample performance (using Locust)
 The following test was performed with 5 test servers and least connections algorithm, with occassional random toggling of dead/alive states of some server/s.
+
 ![Overview](images/stat1.png)
 
 ![RPS](images/stat2.png)
